@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)
 
 # 環境変数を読み込み
 load_dotenv()
-TOKEN = os.getenv("DISCORD_TOKEN")
+TOKEN = os.getenv("DISCORD_BOT_TOKEN")
 if not TOKEN:
     raise ValueError("DISCORD_BOT_TOKEN が設定されていません。環境変数を確認してください。")
 
