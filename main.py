@@ -2,16 +2,14 @@ import os
 import discord
 from discord.ext import commands
 from discord import app_commands
-from datetime import datetime, timedelta
+import asyncio
 import json
 
 # ボットの初期設定
 intents = discord.Intents.default()
 intents.members = True
-intents.message_content = True
 bot = commands.Bot(command_prefix="!", intents=intents, reconnect=True)
 
-# 環境変数とグローバル設定
 TOKEN = os.getenv('DISCORD_TOKEN')
 DEFAULT_INACTIVITY_DAYS = 30
 inactivity_days = DEFAULT_INACTIVITY_DAYS
@@ -38,11 +36,22 @@ def save_settings():
 async def on_ready():
     print(f'Logged in as {bot.user}')
     load_settings()
-    try:
-        synced = await bot.tree.sync()
-        print(f"Synced {len(synced)} commands")
-    except Exception as e:
-        print(f"Error syncing commands: {e}")
+    await sync_commands()
+    print("Bot is ready!")
+
+async def sync_commands():
+    """スラッシュコマンドを同期する"""
+    retries = 5
+    for retry in range(retries):
+        try:
+            synced = await bot.tree.sync()
+            print(f"Synced {len(synced)} commands")
+            break
+        except Exception as e:
+            print(f"Error syncing commands on attempt {retry + 1}/{retries}: {e}")
+            await asyncio.sleep(5)  # リトライ前に待機
+    else:
+        print("Failed to sync commands after multiple attempts. Please check permissions or guild configurations.")
 
 # 非活動メンバー管理クラス
 class InactivityManager(commands.Cog):
@@ -68,8 +77,20 @@ class InactivityManager(commands.Cog):
     async def check_inactive_members(self, interaction: discord.Interaction):
         """非活動メンバーを確認するスラッシュコマンド"""
         guild = interaction.guild
-        now = datetime.utcnow()
-        inactive_threshold = now - timedelta(days=inactivity_days)
+        inactive_members = await self.find_inactive_members(guild)
+        
+        if inactive_members:
+            message = "以下のメンバーが非活動です:\n" + "\n".join(
+                [f"{member.name}#{member.discriminator}" for member in inactive_members]
+            )
+        else:
+            message = "非活動のメンバーはいません。"
+        await interaction.response.send_message(message)
+
+    async def find_inactive_members(self, guild: discord.Guild):
+        """非活動メンバーを探す"""
+        now = discord.utils.utcnow()
+        inactive_threshold = now - discord.utils.timedelta(days=inactivity_days)
         inactive_members = []
 
         for member in guild.members:
@@ -80,11 +101,7 @@ class InactivityManager(commands.Cog):
             if last_message_time is None or last_message_time < inactive_threshold:
                 inactive_members.append(member)
 
-        if inactive_members:
-            message = "以下のメンバーが非活動です:\n" + "\n".join([f"{member.name}#{member.discriminator}" for member in inactive_members])
-        else:
-            message = "非活動のメンバーはいません。"
-        await interaction.response.send_message(message)
+        return inactive_members
 
     @staticmethod
     async def get_last_message_time(member: discord.Member, guild: discord.Guild):
