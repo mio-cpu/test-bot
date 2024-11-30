@@ -2,7 +2,7 @@ import os
 import discord
 from discord.ext import commands
 from discord import app_commands
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from dotenv import load_dotenv
 import logging
 
@@ -57,7 +57,7 @@ class InactivityManager(commands.Cog):
         await interaction.response.defer(thinking=True)  # 処理中の応答を送信
 
         guild = interaction.guild
-        now = datetime.utcnow()
+        now = datetime.now(timezone.utc)  # UTC の現在時刻を取得
         inactive_threshold = now - timedelta(days=inactivity_days)
         inactive_members = []
 
@@ -75,8 +75,8 @@ class InactivityManager(commands.Cog):
                         last_message = message.created_at
                         break
 
-                # 非活動メンバーをリストに追加
-                if last_message is None or last_message < inactive_threshold:
+                # タイムゾーンを統一して比較
+                if last_message is None or last_message.replace(tzinfo=timezone.utc) < inactive_threshold:
                     inactive_members.append(member)
 
             # 結果を作成
