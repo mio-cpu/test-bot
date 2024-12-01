@@ -118,8 +118,9 @@ async def on_ready():
     logger.info("Bot is ready")
     logger.info(f"Connected to the following guilds: {[guild.name for guild in bot.guilds]}")
 
-    # スラッシュコマンドを同期
+    # スラッシュコマンドを削除して再同期
     try:
+        await bot.tree.clear_commands(guild=None)  # 全ギルドのコマンドを削除
         for guild in bot.guilds:
             synced = await bot.tree.sync(guild=guild)
             logger.info(f"スラッシュコマンドが {len(synced)} 個同期されました (ギルド: {guild.name})")
