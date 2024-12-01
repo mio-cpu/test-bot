@@ -98,13 +98,13 @@ async def on_ready():
     logger.info("Bot is ready")
     logger.info(f"Connected to the following guilds: {[guild.name for guild in bot.guilds]}")
 
-    # スラッシュコマンドを同期
+    # グローバルにスラッシュコマンドを同期
     try:
-        for guild in bot.guilds:
-            synced = await bot.tree.sync(guild=guild)
-            logger.info(f"スラッシュコマンドが {len(synced)} 個同期されました (ギルド: {guild.name})")
+        synced = await bot.tree.sync()  # 全サーバーで同期
+        logger.info(f"グローバルにスラッシュコマンドを同期しました: {len(synced)} 個")
     except Exception as e:
         logger.error(f"スラッシュコマンドの同期中にエラーが発生しました: {e}")
+
 
 
 async def setup_hook():
