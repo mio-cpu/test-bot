@@ -76,9 +76,9 @@ class InactivityManager(commands.Cog):
                 if not is_active:
                     inactive_members.append(member)
 
-            # 結果を送信
+            # 結果を送信（ニックネームを使用）
             if inactive_members:
-                message = "以下のメンバーが非活動です:\n" + "\n".join([member.name for member in inactive_members])
+                message = "以下のメンバーが非活動です:\n" + "\n".join([member.display_name for member in inactive_members])
             else:
                 message = "非活動のメンバーはいません。"
 
@@ -104,6 +104,10 @@ async def on_ready():
 
 async def setup_hook():
     await bot.add_cog(InactivityManager(bot))
+
+
+bot.setup_hook = setup_hook
+bot.run(TOKEN)
 
 
 bot.setup_hook = setup_hook
