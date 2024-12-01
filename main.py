@@ -29,10 +29,14 @@ async def on_ready():
     logger.info("Bot is ready")
     logger.info(f"Connected to the following guilds: {[guild.name for guild in bot.guilds]}")
 
-    # スラッシュコマンドをグローバルに同期
+    # スラッシュコマンドを同期
     try:
-        synced = await bot.tree.sync()  # グローバルで同期
-        logger.info(f"スラッシュコマンドが {len(synced)} 個同期されました (グローバル)")
+        # 全てのギルドに対して個別に同期
+        for guild in bot.guilds:
+            synced = await bot.tree.sync(guild=guild)
+            logger.info(f"スラッシュコマンドが {len(synced)} 個同期されました (ギルド: {guild.name})")
+    except discord.errors.Forbidden:
+        logger.error("スラッシュコマンドを同期する権限がありません。")
     except Exception as e:
         logger.error(f"スラッシュコマンドの同期中にエラーが発生しました: {e}")
 
