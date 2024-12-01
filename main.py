@@ -108,7 +108,3 @@ async def setup_hook():
 
 bot.setup_hook = setup_hook
 bot.run(TOKEN)
-
-
-bot.setup_hook = setup_hook
-bot.run(TOKEN)
