@@ -100,7 +100,7 @@ class InactivityManager(commands.Cog):
             # 結果を作成
             if inactive_members:
                 message = "以下のメンバーが非活動です:\n" + "\n".join(
-                    [member.display_name for member in inactive_members]
+                    [member.mention for member in inactive_members]
                 )
             else:
                 message = "非活動のメンバーはいません。"
