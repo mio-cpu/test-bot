@@ -97,7 +97,7 @@ class InactivityManager(commands.Cog):
                 if not is_active:
                     inactive_members.append(member)
 
-            # 結果を作成
+            # 結果を作成（メンション形式）
             if inactive_members:
                 message = "以下のメンバーが非活動です:\n" + "\n".join(
                     [member.mention for member in inactive_members]
